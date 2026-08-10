@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-
+    
 
 
 
@@ -11,5 +11,5 @@ class URL:
 
 
 class URLReceiver(BaseModel):
-
     long_url:str
+
