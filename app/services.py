@@ -1,6 +1,6 @@
 import secrets
 import string
-
+from database import read_short
 
 class ShortCodeGenerator:
 
@@ -10,8 +10,10 @@ class ShortCodeGenerator:
         self.length=length
 
     def generator(self):
-        code=[secrets.choice(self.characters) for x in range (self.length)]
+        while True:
+            code=[secrets.choice(self.characters) for x in range (self.length)]
 
-        return f"/{"".join(code)}"
-
+            check_sh=read_short(f"/{"".join(code)}")
+            if check_sh is None:
+                return f"/{"".join(code)}"
 

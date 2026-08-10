@@ -43,7 +43,11 @@ def read_short(short_url):
 
         fnd=result.scalar_one_or_none()
 
-        return fnd
+        if fnd is not None:
+            return fnd,result[2]
+        else:
+            return fnd,""
+
 
     except:
         return False
