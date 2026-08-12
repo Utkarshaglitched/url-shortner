@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>URL Shortener</title>
+    <style>
+      :root{--bg:#f6f7fb;--card:#ffffff;--muted:#6b7280;--accent:#0f172a}
+      html,body{height:100%;margin:0;font-family:Inter,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--accent)}
+      .container{min-height:100%;display:flex;align-items:center;justify-content:center;padding:24px}
+      .card{width:100%;max-width:640px;background:var(--card);border-radius:12px;padding:28px;box-shadow:0 6px 24px rgba(12,15,23,0.06)}
+      h1{margin:0 0 8px;font-size:20px}
+      p.lead{margin:0 0 18px;color:var(--muted);font-size:14px}
+      .row{display:flex;gap:8px}
+      input[type="url"]{flex:1;padding:10px 12px;border:1px solid #e6e9ef;border-radius:8px;font-size:14px}
+      button{padding:10px 14px;border-radius:8px;border:0;background:#111827;color:#fff;font-weight:600;cursor:pointer}
+      .result{margin-top:18px;padding:12px;border-radius:8px;background:#f8fafc;color:var(--accent);font-size:14px}
+      .error{color:#9b1c1c;background:#fff5f5;border:1px solid #fee2e2;padding:10px;border-radius:8px}
+      a.short{color:#111827;font-weight:700;text-decoration:none}
+      .small{font-size:13px;color:var(--muted)}
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="card">
+        <h1>URL Shortener</h1>
+        <p class="lead">Enter a long URL and get a short, shareable link.</p>
+
+        <div>
+          <div class="row">
+            <input id="longUrl" type="url" placeholder="https://example.com/very/long/url" aria-label="Long URL" />
+            <button id="shortenBtn">Shorten URL</button>
+          </div>
+          <div id="feedback" class="result" style="display:none"></div>
+        </div>
+
+        <div style="margin-top:12px" class="small">Backend endpoint: <code>http://127.0.0.1:8005/api/urls</code></div>
+      </div>
+    </div>
+
+    <script>
+      const btn = document.getElementById('shortenBtn');
+      const input = document.getElementById('longUrl');
+      const feedback = document.getElementById('feedback');
+
+      function showMessage(html, isError = false){
+        feedback.style.display = 'block';
+        feedback.className = isError ? 'result error' : 'result';
+        feedback.innerHTML = html;
+      }
+
+      // Backend returns JSON like: { "code":200, "msg": "/abc123" }
+
+      btn.addEventListener('click', async ()=>{
+        const longUrl = input.value.trim();
+        if(!longUrl){ showMessage('Please enter a URL to shorten.', true); return; }
+
+        btn.disabled = true; btn.textContent = 'Shortening...';
+        showMessage('Sending request...');
+
+        try{
+          const endpoint = 'http://127.0.0.1:8005/api/urls';
+
+          // Use CORS mode — the FastAPI backend must enable CORS.
+          const resp = await fetch(endpoint, {
+            method: 'POST',
+            mode: 'cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ long_url: longUrl })
+          });
+
+          let data = null;
+          try{ data = await resp.json(); } catch(e){ /* ignore parse errors */ }
+
+          if(!resp.ok){
+            const serverMsg = data && (data.msg || data.message) ? (data.msg || data.message) : (resp.statusText + ' (' + resp.status + ')');
+            showMessage('Error from server: ' + serverMsg, true);
+            return;
+          }
+
+          // Expect { code:200, msg: '/abc123' }
+          const shortPath = data && data.msg ? data.msg : null;
+          if(shortPath){
+            const full = 'http://127.0.0.1:8005' + shortPath;
+            showMessage(`<div>Shortened URL: <a class="short" href="${full}" target="_blank" rel="noopener">${full}</a></div>`);
+          } else {
+            showMessage('<div>Unexpected response from server.</div><pre style="white-space:pre-wrap;margin-top:8px">' + JSON.stringify(data, null, 2) + '</pre>', true);
+          }
+
+        } catch(err){
+          showMessage('Network or other error: ' + err.message, true);
+        } finally{
+          btn.disabled = false; btn.textContent = 'Shorten URL';
+        }
+      });
+    </script>
+  </body>
+</html>
