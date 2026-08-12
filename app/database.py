@@ -34,7 +34,7 @@ def add_into(short_url,long_url):
     finally:
         session.close()
 
-def read_short(short_url):
+def read_short(short_url,task):
     session=get_session()
     try:
         command=select(URLModel).where(URLModel.short_code==short_url)
@@ -44,13 +44,17 @@ def read_short(short_url):
         fnd=result.scalar_one_or_none()
 
         if fnd is not None:
-            return fnd,result[2]
+            if task==0:
+                fnd.clicks+=1
+                session.commit()
+
+            return fnd,fnd.original_url
         else:
             return fnd,""
 
 
     except:
-        return False
+        return False,"Error"
 
     finally:
         session.close()

@@ -1,16 +1,19 @@
 from fastapi import FastAPI
 from model import URLReceiver
 from services import ShortCodeGenerator
-from model import URL
+
 from database import add_into,read_long,read_short
+from fastapi.responses import RedirectResponse
+import json
+
 
 app=FastAPI()
 
 
 @app.post("/api/urls")
 def new_url(data:URLReceiver):
-
-    short_url=ShortCodeGenerator.generator()
+    generator=ShortCodeGenerator()
+    short_url=generator.generator()
     long_url=data.long_url
 
     check_long=read_long(long_url)
@@ -28,13 +31,13 @@ def new_url(data:URLReceiver):
     return {
         "code":200,
         "msg":short_url
-    } 
-
+    }
 
 
 @app.get("/{short_url}")
 def redirect(short_url:str):
 
-    short_url_st,redirect_url=read_short(f"/{short_url}")
+    short_url_st,redirect_url=read_short(f"/{short_url}",0)
     if redirect_url and (short_url_st is not None):
-        pass #redirect here
+        return RedirectResponse(url=redirect_url)
+

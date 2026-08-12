@@ -5,6 +5,7 @@ class URLReceiver(BaseModel):
     long_url:str
 
 
+
 class Base(DeclarativeBase):
     pass
 
@@ -15,4 +16,5 @@ class URLModel(Base):
 
     id:Mapped[int]=mapped_column(primary_key=True)
     short_code:Mapped[str]=mapped_column(unique=True,index=True)
-    original_url:Mapped[str]=mapped_column()    
+    original_url:Mapped[str]=mapped_column()
+    clicks:Mapped[int]=mapped_column(default=0)  
