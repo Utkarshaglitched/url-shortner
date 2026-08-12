@@ -13,7 +13,7 @@ class ShortCodeGenerator:
         while True:
             code=[secrets.choice(self.characters) for x in range (self.length)]
 
-            check_sh=read_short(f"/{"".join(code)}")
+            check_sh,_=read_short(f"/{"".join(code)}",1)
             if check_sh is None:
                 return f"/{"".join(code)}"
 

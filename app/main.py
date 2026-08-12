@@ -1,14 +1,20 @@
 from fastapi import FastAPI
 from model import URLReceiver
 from services import ShortCodeGenerator
-
+from fastapi.middleware.cors import CORSMiddleware
 from database import add_into,read_long,read_short
 from fastapi.responses import RedirectResponse
 import json
 
 
 app=FastAPI()
-
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.post("/api/urls")
 def new_url(data:URLReceiver):
