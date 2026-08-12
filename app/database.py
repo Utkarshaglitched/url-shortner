@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 from sqlalchemy import create_engine,select
 from sqlalchemy.orm import Session
 from model import Base,URLModel
+import json
 
 load_dotenv()
 
@@ -76,3 +77,26 @@ def read_long(long_url):
     finally:
         session.close()
 
+def read_all():
+    session=get_session()
+    try:
+        command=select(URLModel)
+        result=session.execute(command)
+        result=result.scalars().all()
+
+        response_list=[]
+        for urls in result:
+            response_list.append(
+            {
+                "short_url":urls.short_code,
+                "original_url":urls.original_url,
+                "clicks":urls.clicks
+            }
+            )
+
+        return response_list
+        
+    except:
+        return []
+    finally:
+        session.close()

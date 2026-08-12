@@ -2,10 +2,8 @@ from fastapi import FastAPI
 from model import URLReceiver
 from services import ShortCodeGenerator
 from fastapi.middleware.cors import CORSMiddleware
-from database import add_into,read_long,read_short
+from database import add_into,read_long,read_short,read_all
 from fastapi.responses import RedirectResponse
-import json
-
 
 app=FastAPI()
 app.add_middleware(
@@ -47,3 +45,9 @@ def redirect(short_url:str):
     if redirect_url and (short_url_st is not None):
         return RedirectResponse(url=redirect_url)
 
+
+@app.get("/analytics/data")
+def analysis():
+    res=read_all()
+    return res
+    

@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>URL Shortener Analytics</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f4f6f9;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 40px auto;
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #1a1a1a;
+            text-align: center;
+        }
+
+        .message {
+            text-align: center;
+            padding: 30px 15px;
+            font-size: 16px;
+        }
+
+        .loading {
+            color: #666;
+            font-weight: 500;
+        }
+
+        .empty {
+            color: #666;
+        }
+
+        .error {
+            color: #d9534f;
+            background-color: #fdf7f7;
+            border: 1px solid #d9534f;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+            margin-top: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th, td {
+            padding: 12px 16px;
+            border-bottom: 1px solid #e1e4e8;
+            word-break: break-all;
+        }
+
+        th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #444;
+            border-bottom: 2px solid #dde1e5;
+        }
+
+        tbody tr:hover {
+            background-color: #f9fbfd;
+        }
+
+        a {
+            color: #0066cc;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        .clicks-count {
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>URL Shortener Analytics</h1>
+        <div id="app-status" class="message loading">Loading...</div>
+        <div id="table-container" class="table-responsive" style="display: none;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Short URL</th>
+                        <th>Original URL</th>
+                        <th>Clicks</th>
+                    </tr>
+                </thead>
+                <tbody id="analytics-tbody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://127.0.0.1:8005/analytics/data';
+        const BASE_URL = 'http://127.0.0.1:8005';
+
+        document.addEventListener('DOMContentLoaded', fetchAnalyticsData);
+
+        async function fetchAnalyticsData() {
+            const statusDiv = document.getElementById('app-status');
+            const tableContainer = document.getElementById('table-container');
+            const tbody = document.getElementById('analytics-tbody');
+
+            statusDiv.style.display = 'block';
+            statusDiv.className = 'message loading';
+            statusDiv.textContent = 'Loading...';
+            tableContainer.style.display = 'none';
+
+            try {
+                const response = await fetch(API_URL);
+
+                if (!response.ok) {
+                    throw new Error(`Failed to load data (Status ${response.status})`);
+                }
+
+                const data = await response.json();
+
+                if (!Array.isArray(data) || data.length === 0) {
+                    statusDiv.className = 'message empty';
+                    statusDiv.textContent = 'No URLs found.';
+                    return;
+                }
+
+                tbody.innerHTML = '';
+
+                data.forEach(item => {
+                    const tr = document.createElement('tr');
+
+                    // Short URL formatting
+                    const tdShort = document.createElement('td');
+                    const shortPath = item.short_url || '';
+                    const fullShortUrl = shortPath.startsWith('/') ? `${BASE_URL}${shortPath}` : `${BASE_URL}/${shortPath}`;
+                    
+                    const shortLink = document.createElement('a');
+                    shortLink.href = fullShortUrl;
+                    shortLink.textContent = fullShortUrl;
+                    shortLink.target = '_blank';
+                    tdShort.appendChild(shortLink);
+
+                    // Original URL formatting
+                    const tdOriginal = document.createElement('td');
+                    const originalLink = document.createElement('a');
+                    originalLink.href = item.original_url || '#';
+                    originalLink.textContent = item.original_url || '';
+                    originalLink.target = '_blank';
+                    originalLink.rel = 'noopener noreferrer';
+                    tdOriginal.appendChild(originalLink);
+
+                    // Clicks count formatting
+                    const tdClicks = document.createElement('td');
+                    tdClicks.className = 'clicks-count';
+                    tdClicks.textContent = item.clicks !== undefined ? item.clicks : 0;
+
+                    tr.appendChild(tdShort);
+                    tr.appendChild(tdOriginal);
+                    tr.appendChild(tdClicks);
+
+                    tbody.appendChild(tr);
+                });
+
+                statusDiv.style.display = 'none';
+                tableContainer.style.display = 'block';
+
+            } catch (error) {
+                statusDiv.className = 'message error';
+                statusDiv.textContent = `Error: ${error.message || 'Unable to fetch analytics data.'}`;
+            }
+        }
+    </script>
+</body>
+</html>
