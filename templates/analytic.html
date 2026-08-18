@@ -5,6 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>URL Shortener Analytics</title>
     <style>
+        :root {
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --accent: #0f172a;
+            --muted: #64748b;
+            --border: #e2e8f0;
+            --primary: #2563eb;
+            --badge-bg: #eff6ff;
+            --badge-color: #1d4ed8;
+            --badge-border: #bfdbfe;
+        }
+
         * {
             box-sizing: border-box;
             margin: 0;
@@ -13,56 +25,93 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background-color: #f4f6f9;
-            color: #333;
+            background-color: var(--bg);
+            color: var(--accent);
             line-height: 1.6;
-            padding: 20px;
+            padding: 24px 16px;
         }
 
         .container {
             max-width: 1000px;
-            margin: 40px auto;
-            background: #ffffff;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            margin: 20px auto;
+            background: var(--card-bg);
+            padding: 32px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+            border: 1px solid var(--border);
+        }
+
+        .header-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
         h1 {
-            font-size: 24px;
-            margin-bottom: 20px;
-            color: #1a1a1a;
-            text-align: center;
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .action-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background-color: #f1f5f9;
+            color: var(--accent);
+            border: 1px solid var(--border);
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .action-btn:hover {
+            background-color: #e2e8f0;
+            text-decoration: none;
         }
 
         .message {
             text-align: center;
-            padding: 30px 15px;
-            font-size: 16px;
+            padding: 40px 20px;
+            font-size: 15px;
+            border-radius: 8px;
         }
 
         .loading {
-            color: #666;
+            color: var(--muted);
             font-weight: 500;
         }
 
         .empty {
-            color: #666;
+            color: var(--muted);
+            background-color: #f8fafc;
+            border: 1px dashed var(--border);
         }
 
         .error {
-            color: #d9534f;
-            background-color: #fdf7f7;
-            border: 1px solid #d9534f;
-            border-radius: 6px;
-            padding: 15px;
-            margin: 10px 0;
+            color: #dc2626;
+            background-color: #fef2f2;
+            border: 1px solid #fecaca;
         }
 
         .table-responsive {
             width: 100%;
             overflow-x: auto;
-            margin-top: 10px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
         }
 
         table {
@@ -72,47 +121,96 @@
         }
 
         th, td {
-            padding: 12px 16px;
-            border-bottom: 1px solid #e1e4e8;
-            word-break: break-all;
+            padding: 14px 18px;
+            border-bottom: 1px solid var(--border);
+            vertical-align: middle;
         }
 
         th {
-            background-color: #f8f9fa;
+            background-color: #f8fafc;
+            font-size: 13px;
             font-weight: 600;
-            color: #444;
-            border-bottom: 2px solid #dde1e5;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: var(--muted);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
         }
 
         tbody tr:hover {
-            background-color: #f9fbfd;
+            background-color: #f8fafc;
+        }
+
+        .url-cell {
+            word-break: break-all;
+            max-width: 400px;
         }
 
         a {
-            color: #0066cc;
+            color: var(--primary);
             text-decoration: none;
+            font-weight: 500;
         }
 
         a:hover {
             text-decoration: underline;
         }
 
+        .clicks-header {
+            text-align: center;
+            white-space: nowrap;
+            word-break: normal;
+            width: 130px;
+            min-width: 110px;
+        }
+
         .clicks-count {
-            font-weight: 600;
+            text-align: center;
+            white-space: nowrap;
+            word-break: normal;
+            width: 130px;
+            min-width: 110px;
+        }
+
+        .clicks-badge {
+            display: inline-block;
+            background-color: var(--badge-bg);
+            color: var(--badge-color);
+            border: 1px solid var(--badge-border);
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 13px;
+            min-width: 44px;
+            text-align: center;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>URL Shortener Analytics</h1>
-        <div id="app-status" class="message loading">Loading...</div>
+        <div class="header-row">
+            <h1>URL Shortener Analytics</h1>
+            <div class="header-actions">
+                <a href="index.html" class="action-btn">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"></path><path d="m12 19-7-7 7-7"></path></svg>
+                    <span>Shorten URL</span>
+                </a>
+                <button class="action-btn" onclick="fetchAnalyticsData()">Refresh</button>
+            </div>
+        </div>
+
+        <div id="app-status" class="message loading">Loading analytics data...</div>
+
         <div id="table-container" class="table-responsive" style="display: none;">
             <table>
                 <thead>
                     <tr>
-                        <th>Short URL</th>
-                        <th>Original URL</th>
-                        <th>Clicks</th>
+                        <th style="width: 35%;">Short URL</th>
+                        <th style="width: 50%;">Original URL</th>
+                        <th class="clicks-header">Clicks</th>
                     </tr>
                 </thead>
                 <tbody id="analytics-tbody"></tbody>
@@ -133,7 +231,7 @@
 
             statusDiv.style.display = 'block';
             statusDiv.className = 'message loading';
-            statusDiv.textContent = 'Loading...';
+            statusDiv.textContent = 'Loading analytics data...';
             tableContainer.style.display = 'none';
 
             try {
@@ -147,7 +245,7 @@
 
                 if (!Array.isArray(data) || data.length === 0) {
                     statusDiv.className = 'message empty';
-                    statusDiv.textContent = 'No URLs found.';
+                    statusDiv.textContent = 'No short URLs recorded yet.';
                     return;
                 }
 
@@ -156,8 +254,9 @@
                 data.forEach(item => {
                     const tr = document.createElement('tr');
 
-                    // Short URL formatting
+                    // Short URL column
                     const tdShort = document.createElement('td');
+                    tdShort.className = 'url-cell';
                     const shortPath = item.short_url || '';
                     const fullShortUrl = shortPath.startsWith('/') ? `${BASE_URL}${shortPath}` : `${BASE_URL}/${shortPath}`;
                     
@@ -165,10 +264,12 @@
                     shortLink.href = fullShortUrl;
                     shortLink.textContent = fullShortUrl;
                     shortLink.target = '_blank';
+                    shortLink.rel = 'noopener noreferrer';
                     tdShort.appendChild(shortLink);
 
-                    // Original URL formatting
+                    // Original URL column
                     const tdOriginal = document.createElement('td');
+                    tdOriginal.className = 'url-cell';
                     const originalLink = document.createElement('a');
                     originalLink.href = item.original_url || '#';
                     originalLink.textContent = item.original_url || '';
@@ -176,10 +277,15 @@
                     originalLink.rel = 'noopener noreferrer';
                     tdOriginal.appendChild(originalLink);
 
-                    // Clicks count formatting
+                    // Clicks count column
                     const tdClicks = document.createElement('td');
                     tdClicks.className = 'clicks-count';
-                    tdClicks.textContent = item.clicks !== undefined ? item.clicks : 0;
+                    const clicksValue = (item.clicks !== undefined && item.clicks !== null) ? item.clicks : 0;
+                    
+                    const clicksBadge = document.createElement('span');
+                    clicksBadge.className = 'clicks-badge';
+                    clicksBadge.textContent = clicksValue;
+                    tdClicks.appendChild(clicksBadge);
 
                     tr.appendChild(tdShort);
                     tr.appendChild(tdOriginal);
